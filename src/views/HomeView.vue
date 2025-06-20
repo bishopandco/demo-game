@@ -7,8 +7,10 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { gsap } from 'gsap'
 import { buildGridPlane } from '@/assets/gridPlane.ts'
 import { Sprite as MySprite } from '@/assets/sprite.ts'
+import { Controls } from '@/utils/controls.ts'
 import { buildWorld } from '@/utils/world.ts'
 import * as THREE from 'three'
+import { updateCamera } from '@/utils/camera.ts'
 
 const container = ref<HTMLElement | null>(null)
 const clock = new THREE.Clock()
@@ -23,8 +25,8 @@ const acceleration = 400
 const brakeDeceleration = 600
 const friction = 200
 const rotationSpeed = Math.PI
-const camDistance = 100
-const camHeight = 20
+const camDistance = 30
+const camHeight = 10
 const camLerp = 0.1
 
 const keys = { left: false, right: false, break: false, accelerate: false }
@@ -63,6 +65,8 @@ function onKeyUp(e: KeyboardEvent) {
   }
 }
 
+const controls = new Controls()
+
 function init() {
   container.value?.appendChild(renderer.domElement)
   scene.add(buildGridPlane())
@@ -73,36 +77,24 @@ function init() {
   window.addEventListener('keyup', onKeyUp)
 }
 
-function updateMovement(delta: number) {
-  if (keys.left) sprite.rotation.y += rotationSpeed * delta
-  if (keys.right) sprite.rotation.y -= rotationSpeed * delta
+function animate() {
+  const delta = clock.getDelta()
+  if (controls.forward) speed += 20 * delta
+  if (controls.backward) speed -= 30 * delta
+  if (controls.left) sprite.rotation.y += rotationSpeed * delta
+  if (controls.right) sprite.rotation.y -= rotationSpeed * delta
 
-  if (keys.break) {
+  if (controls.backward) {
     speed = Math.min(speed + acceleration * delta, maxSpeed)
-  } else if (keys.accelerate) {
+  } else if (controls.forward) {
     speed = Math.max(speed - brakeDeceleration * delta, -maxSpeed / 2)
   } else {
     if (speed > 0) speed = Math.max(speed - friction * delta, 0)
     else if (speed < 0) speed = Math.min(speed + friction * delta, 0)
   }
-
   const forward = new THREE.Vector3(Math.sin(sprite.rotation.y), 0, Math.cos(sprite.rotation.y))
   sprite.position.add(forward.multiplyScalar(speed * delta))
-}
-
-function updateCamera() {
-  const localOffset = new THREE.Vector3(0, camHeight, camDistance)
-  const worldOffset = localOffset.clone().applyQuaternion(sprite.quaternion).add(sprite.position)
-
-  camera.position.lerp(worldOffset, camLerp)
-
-  camera.quaternion.slerp(sprite.quaternion, camLerp)
-}
-
-function animate() {
-  const delta = clock.getDelta()
-  updateMovement(delta)
-  updateCamera()
+  updateCamera(camera, sprite, camDistance, camHeight, camLerp)
   renderer.render(scene, camera)
   requestAnimationFrame(animate)
 }
