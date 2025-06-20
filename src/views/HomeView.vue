@@ -1,44 +1,26 @@
 <template>
-  <div>
-    <div ref="container" class="full-screen"></div>
-  </div>
+  <div ref="container" class="w-full h-full"></div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount} from 'vue'
-import * as THREE from 'three'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { gsap } from 'gsap'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
-import { Clock } from 'three'
+import { buildGridPlane } from '@/assets/gridPlane.ts'
+import { Sprite as MySprite } from '@/assets/sprite.ts'
+import { buildWorld } from '@/utils/world.ts'
 
-const size = new THREE.Vector2(window.innerWidth, window.innerHeight)
-
-const scene = new THREE.Scene()
-const aspect = size.x / size.y
-const camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000)
-const renderer = new THREE.WebGLRenderer({ antialias: true })
-const controls = new OrbitControls(camera, renderer.domElement)
-const composer = new EffectComposer(renderer)
 const container = ref<HTMLElement | null>(null)
-const renderPass = new RenderPass(scene, camera)
+
+const { camera, scene, renderer, controls, composer } = buildWorld()
 
 function init() {
-  camera.position.set(0, 0, 30)
-  camera.up.set(0, 1, 0)
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  composer.setSize(window.innerWidth, window.innerHeight)
-  composer.addPass(renderPass)
+  console.log('Initializing Three.js scene...')
   container.value?.appendChild(renderer.domElement)
-  controls.enableZoom = false
-  controls.enableRotate = false
-  controls.enableDamping = true
-  controls.dampingFactor = 0.05
-  renderer.domElement.style.touchAction = 'none'
-  window.addEventListener('resize', onResize)
+  const gridPlane = buildGridPlane()
+  const sprite = MySprite.createSprite(10)
+  scene.add(sprite)
+  scene.add(gridPlane)
 }
-
 
 function animate() {
   requestAnimationFrame(animate)
@@ -46,18 +28,16 @@ function animate() {
   composer.render()
 }
 
-
 function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight
   camera.updateProjectionMatrix()
   renderer.setSize(window.innerWidth, window.innerHeight)
 }
 
-
-
 onMounted(() => {
   init()
   animate()
+  window.addEventListener('resize', onResize)
 })
 
 onBeforeUnmount(() => {
@@ -69,5 +49,4 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
