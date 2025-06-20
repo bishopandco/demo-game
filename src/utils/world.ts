@@ -47,5 +47,5 @@ export function buildWorld() {
   setupControls(controls)
   setupComposer(composer, renderPass, window)
 
-  return { scene, camera, renderer, controls, composer }
+  return { scene, camera, renderer, composer }
 }

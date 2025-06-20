@@ -13,31 +13,53 @@ import * as THREE from 'three'
 const container = ref<HTMLElement | null>(null)
 const clock = new THREE.Clock()
 
-const { camera, scene, renderer, controls, composer } = buildWorld()
-const cameraOffset = new THREE.Vector3(0, 35, 100)
+const { camera, scene, renderer, composer } = buildWorld()
 
 let sprite: THREE.Mesh
 
-let velocityY = 1
-let isGrounded = true
+let speed = 0
+const maxSpeed = 200
+const acceleration = 400
+const brakeDeceleration = 600
+const friction = 200
+const rotationSpeed = Math.PI
+const camDistance = 100
+const camHeight = 20
+const camLerp = 0.1
 
-const keys = { left: false, right: false, jump: false, squat: false }
+const keys = { left: false, right: false, break: false, accelerate: false }
 
 function onKeyDown(e: KeyboardEvent) {
-  switch (e.key.toLowerCase()) {
-    case 'a': keys.left = true; break
-    case 'd': keys.right = true; break
-    case 'w': keys.jump = true; break
-    case 's': keys.squat = true; break
+  switch (e.code) {
+    case 'ArrowLeft':
+      keys.left = true
+      break
+    case 'ArrowRight':
+      keys.right = true
+      break
+    case 'ArrowUp':
+      keys.accelerate = true
+      break
+    case 'ArrowDown':
+      keys.break = true
+      break
   }
 }
 
 function onKeyUp(e: KeyboardEvent) {
-  switch (e.key.toLowerCase()) {
-    case 'a': keys.left = false; break
-    case 'd': keys.right = false; break
-    case 'w': keys.jump = false; break
-    case 's': keys.squat = false; break
+  switch (e.code) {
+    case 'ArrowLeft':
+      keys.left = false
+      break
+    case 'ArrowRight':
+      keys.right = false
+      break
+    case 'ArrowUp':
+      keys.accelerate = false
+      break
+    case 'ArrowDown':
+      keys.break = false
+      break
   }
 }
 
@@ -50,38 +72,39 @@ function init() {
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
 }
+
 function updateMovement(delta: number) {
-  const speed = 100
-  const jumpPower = 100
-  const gravity = 100
+  if (keys.left) sprite.rotation.y += rotationSpeed * delta
+  if (keys.right) sprite.rotation.y -= rotationSpeed * delta
 
-  if (keys.left)  sprite.position.x -= speed * delta
-  if (keys.right) sprite.position.x += speed * delta
-
-  if (keys.jump && isGrounded) {
-    velocityY = jumpPower
-    isGrounded = false
+  if (keys.break) {
+    speed = Math.min(speed + acceleration * delta, maxSpeed)
+  } else if (keys.accelerate) {
+    speed = Math.max(speed - brakeDeceleration * delta, -maxSpeed / 2)
+  } else {
+    if (speed > 0) speed = Math.max(speed - friction * delta, 0)
+    else if (speed < 0) speed = Math.min(speed + friction * delta, 0)
   }
 
-  velocityY -= gravity * delta
-  sprite.position.y += velocityY * delta
-  if (sprite.position.y <= 5) {
-    sprite.position.y = 5
-    velocityY = 0
-    isGrounded = true
-  }
-
-  sprite.scale.y = keys.squat && isGrounded ? 0.5 : 1
+  const forward = new THREE.Vector3(Math.sin(sprite.rotation.y), 0, Math.cos(sprite.rotation.y))
+  sprite.position.add(forward.multiplyScalar(speed * delta))
 }
+
+function updateCamera() {
+  const localOffset = new THREE.Vector3(0, camHeight, camDistance)
+  const worldOffset = localOffset.clone().applyQuaternion(sprite.quaternion).add(sprite.position)
+
+  camera.position.lerp(worldOffset, camLerp)
+
+  camera.quaternion.slerp(sprite.quaternion, camLerp)
+}
+
 function animate() {
-  requestAnimationFrame(animate)
   const delta = clock.getDelta()
   updateMovement(delta)
-  camera.position.copy(sprite.position).add(cameraOffset)
-  controls.target.copy(sprite.position)
-
-  controls.update()
-  composer.render()
+  updateCamera()
+  renderer.render(scene, camera)
+  requestAnimationFrame(animate)
 }
 
 onMounted(() => {
