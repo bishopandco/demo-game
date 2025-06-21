@@ -65,7 +65,8 @@ function animate() {
   const forward = new THREE.Vector3(Math.sin(sprite.rotation.y), 0, Math.cos(sprite.rotation.y))
   sprite.position.add(forward.multiplyScalar(speed * delta))
   updateCamera(camera, sprite, camDistance, camHeight, camLerp)
-  skyDome.position.copy(camera.position)
+  skyDome.position.copy(camera.position);
+
   renderer.render(scene, camera)
   requestAnimationFrame(animate)
 }
