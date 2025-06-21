@@ -11,6 +11,7 @@ import { loadTerrain } from '@/assets/terrain.ts'
 import { Sprite as MySprite } from '@/assets/sprite.ts'
 import { Controls } from '@/utils/controls.ts'
 import { buildWorld } from '@/utils/world.ts'
+import { cameraLight, hemisphereLight } from '@/utils/lights.ts'
 import * as THREE from 'three'
 import { updateCamera } from '@/utils/camera.ts'
 
@@ -30,8 +31,6 @@ const camDistance = 2
 const camHeight = 4
 const camLerp = 0.1
 
-
-
 const controls = new Controls()
 const skyDome = createSkyDome()
 scene.add(skyDome)
@@ -40,6 +39,8 @@ function init() {
   container.value?.appendChild(renderer.domElement)
   scene.add(buildGridPlane())
   scene.add(loadTerrain())
+  scene.add(hemisphereLight(0xffffff, 0x404040, 0.5))
+  scene.add(cameraLight())
   sprite = MySprite.createSprite(1)
   sprite.position.set(0, 1, 0)
   scene.add(sprite)
