@@ -7,10 +7,10 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { gsap } from 'gsap'
 import {
+  Globals,
   Sprite,
   Controls,
   buildGridPlane,
-  createSkyDome,
   loadTerrain,
   buildWorld,
   cameraLight,
@@ -27,14 +27,6 @@ const { camera, scene, renderer, composer, skyDome } = buildWorld()
 
 let sprite: THREE.Mesh
 let speed = 0
-const maxSpeed = 30
-const acceleration = 400
-const brakeDeceleration = 600
-const friction = 50
-const rotationSpeed = Math.PI
-const camDistance = 2
-const camHeight = 4
-const camLerp = 0.1
 
 const controls = new Controls()
 
@@ -55,20 +47,20 @@ function animate() {
 
   if (controls.forward) speed += 20 * delta
   if (controls.backward) speed -= 20 * delta
-  if (controls.left) sprite.rotation.y += rotationSpeed * delta
-  if (controls.right) sprite.rotation.y -= rotationSpeed * delta
+  if (controls.left) sprite.rotation.y += Globals.rotationSpeed * delta
+  if (controls.right) sprite.rotation.y -= Globals.rotationSpeed * delta
 
   if (controls.backward) {
-    speed = Math.min(speed + acceleration * delta, maxSpeed / 2)
+    speed = Math.min(speed + Globals.acceleration * delta, Globals.maxSpeed / 2)
   } else if (controls.forward) {
-    speed = Math.max(speed - brakeDeceleration * delta, -maxSpeed / 2)
+    speed = Math.max(speed - Globals.brakeDeceleration * delta, -Globals.maxSpeed / 2)
   } else {
-    if (speed > 0) speed = Math.max(speed - friction * delta, 0)
-    else if (speed < 0) speed = Math.min(speed + friction * delta, 0)
+    if (speed > 0) speed = Math.max(speed - Globals.friction * delta, 0)
+    else if (speed < 0) speed = Math.min(speed + Globals.friction * delta, 0)
   }
   const forward = new THREE.Vector3(Math.sin(sprite.rotation.y), 0, Math.cos(sprite.rotation.y))
   sprite.position.add(forward.multiplyScalar(speed * delta))
-  updateCamera(camera, sprite, camDistance, camHeight, camLerp)
+  updateCamera(camera, sprite, Globals.camDistance, Globals.camHeight, Globals.camLerp)
   skyDome.position.copy(camera.position)
   renderer.render(scene, camera)
   requestAnimationFrame(animate)
