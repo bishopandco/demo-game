@@ -6,6 +6,7 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { gsap } from 'gsap'
 import { buildGridPlane } from '@/assets/gridPlane.ts'
+import { createSkyDome } from '@/assets/skyDome.ts'
 import { Sprite as MySprite } from '@/assets/sprite.ts'
 import { Controls } from '@/utils/controls.ts'
 import { buildWorld } from '@/utils/world.ts'
@@ -29,43 +30,9 @@ const camDistance = 30
 const camHeight = 10
 const camLerp = 0.1
 
-const keys = { left: false, right: false, break: false, accelerate: false }
-
-function onKeyDown(e: KeyboardEvent) {
-  switch (e.code) {
-    case 'ArrowLeft':
-      keys.left = true
-      break
-    case 'ArrowRight':
-      keys.right = true
-      break
-    case 'ArrowUp':
-      keys.accelerate = true
-      break
-    case 'ArrowDown':
-      keys.break = true
-      break
-  }
-}
-
-function onKeyUp(e: KeyboardEvent) {
-  switch (e.code) {
-    case 'ArrowLeft':
-      keys.left = false
-      break
-    case 'ArrowRight':
-      keys.right = false
-      break
-    case 'ArrowUp':
-      keys.accelerate = false
-      break
-    case 'ArrowDown':
-      keys.break = false
-      break
-  }
-}
-
 const controls = new Controls()
+const skyDome = createSkyDome();
+scene.add(skyDome);
 
 function init() {
   container.value?.appendChild(renderer.domElement)
@@ -73,8 +40,11 @@ function init() {
   sprite = MySprite.createSprite(10)
   sprite.position.set(0, 5, 0)
   scene.add(sprite)
-  window.addEventListener('keydown', onKeyDown)
-  window.addEventListener('keyup', onKeyUp)
+
+
+
+
+
 }
 
 function animate() {
@@ -95,6 +65,7 @@ function animate() {
   const forward = new THREE.Vector3(Math.sin(sprite.rotation.y), 0, Math.cos(sprite.rotation.y))
   sprite.position.add(forward.multiplyScalar(speed * delta))
   updateCamera(camera, sprite, camDistance, camHeight, camLerp)
+  skyDome.position.copy(camera.position)
   renderer.render(scene, camera)
   requestAnimationFrame(animate)
 }
@@ -110,8 +81,6 @@ onMounted(() => {
   })
 })
 onBeforeUnmount(() => {
-  window.removeEventListener('keydown', onKeyDown)
-  window.removeEventListener('keyup', onKeyUp)
   window.removeEventListener('resize', () => {})
   gsap.globalTimeline.clear()
   container.value?.removeChild(renderer.domElement)
