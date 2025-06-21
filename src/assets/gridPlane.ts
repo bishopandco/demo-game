@@ -5,7 +5,7 @@ export function buildGridPlane() {
   const loader = new THREE.TextureLoader()
   const gridTex = loader.load('/textures/grid.png')
   gridTex.wrapS = gridTex.wrapT = THREE.RepeatWrapping
-  gridTex.repeat.set(planeSize / 5, planeSize / 5)
+  gridTex.repeat.set(planeSize / 2, planeSize / 2)
 
   const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize)
   const planeMat = new THREE.MeshBasicMaterial({
