@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { createSkyDome } from '@/utils'
 
 function setupCamera(camera: THREE.PerspectiveCamera) {
   camera.position.set(0, 30, 100)
@@ -41,11 +42,12 @@ export function buildWorld() {
   const controls = new OrbitControls(camera, renderer.domElement)
   const composer = new EffectComposer(renderer)
   const renderPass = new RenderPass(scene, camera)
+  const skyDome = createSkyDome()
 
   setupCamera(camera)
   setupRenderer(renderer, window)
   setupControls(controls)
   setupComposer(composer, renderPass, window)
 
-  return { scene, camera, renderer, composer }
+  return { scene, camera, renderer, composer, skyDome }
 }
