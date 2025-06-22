@@ -1,14 +1,13 @@
 export class Globals {
-  static maxSpeed = 10
-  static acceleration = 100
+  static maxSpeed = 1
+  static acceleration = 5
   static brakeDeceleration = 10
-  static friction = 50
+  static friction = 4
   static rotationSpeed = Math.PI
   static camDistance = 5
   static camHeight = 4
   static camLerp = 0.1
   static lookAhead = 6
-
 
   static setMaxSpeed(speed: number) {
     this.maxSpeed = speed

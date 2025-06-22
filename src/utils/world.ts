@@ -2,7 +2,17 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
-import { Ground, SkyDome, Terrain, GameControls, Sprite, Camera, Globals } from '@/utils'
+import {
+  Ground,
+  SkyDome,
+  Terrain,
+  GameControls,
+  Sprite,
+  Camera,
+  Globals,
+  Light,
+  HemisphereLight,
+} from '@/utils'
 
 export class World {
   scene: THREE.Scene
@@ -16,21 +26,44 @@ export class World {
   terrain: Terrain
   gameControls: GameControls
   sprite: Sprite
+  light: Light
+  hemisphereLight: HemisphereLight
   delta: number
 
   constructor(private container: HTMLElement) {
     const size = new THREE.Vector2(window.innerWidth, window.innerHeight)
+
     this.scene = new THREE.Scene()
-    this.camera = new Camera(this.scene)
+
+    this.light = new Light()
+    this.scene.add(this.light)
+
+    this.hemisphereLight = new HemisphereLight()
+    this.scene.add(this.hemisphereLight)
+
+    this.camera = new Camera()
+    this.scene.add(this.camera)
+
     this.renderer = new THREE.WebGLRenderer({ antialias: true })
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
     this.composer = new EffectComposer(this.renderer)
+
     this.clock = new THREE.Clock()
-    this.skyDome = new SkyDome(this.scene, 500)
-    this.ground = new Ground(this.scene, 1000, '/textures/grid.png', 2)
-    this.terrain = new Terrain(this.scene)
+
+    this.skyDome = new SkyDome(500)
+    this.scene.add(this.skyDome.mesh)
+
+    this.ground = new Ground(1000, '/textures/grid.png', 2)
+    this.scene.add(this.ground.mesh)
+
+    this.terrain = new Terrain()
+    this.scene.add(this.terrain.mesh)
+
+    this.sprite = new Sprite(1)
+    this.scene.add(this.sprite.mesh)
+
     this.gameControls = new GameControls()
-    this.sprite = new Sprite(this.scene, 1)
+
     this.delta = 0
 
     this._setupCamera()
@@ -52,8 +85,9 @@ export class World {
 
   update(dt = this.clock.getDelta()) {
     this.gameControls.update(this.sprite.mesh, dt)
-    const localOffset   = new THREE.Vector3(0, Globals.camHeight, Globals.camDistance)
-    const worldOffset   = localOffset.clone()
+    const localOffset = new THREE.Vector3(0, Globals.camHeight, Globals.camDistance)
+    const worldOffset = localOffset
+      .clone()
       .applyQuaternion(this.sprite.mesh.quaternion)
       .add(this.sprite.mesh.position)
     this.camera.position.lerp(worldOffset, Globals.camLerp)
@@ -61,8 +95,7 @@ export class World {
     const forward = new THREE.Vector3(0, 0, -1)
       .applyQuaternion(this.sprite.mesh.quaternion)
       .normalize()
-    const lookTarget = this.sprite.mesh.position.clone()
-      .addScaledVector(forward, Globals.lookAhead)
+    const lookTarget = this.sprite.mesh.position.clone().addScaledVector(forward, Globals.lookAhead)
     this.camera.lookAt(lookTarget)
 
     this.controls.target.copy(lookTarget)

@@ -25,19 +25,14 @@ export class GameControls {
   }
 
   update(sprite: THREE.Mesh, dt: number) {
-    // ↻ steer
     if (this.left)  sprite.rotation.y += Globals.rotationSpeed * dt
     if (this.right) sprite.rotation.y -= Globals.rotationSpeed * dt
-
-    // ⇵ throttle / brake
     if (this.forward)  this.speed = Math.min(this.speed - Globals.acceleration * dt,  -Globals.maxSpeed)
     else if (this.backward) this.speed = Math.max(this.speed + Globals.brakeDeceleration * dt, Globals.maxSpeed)
-    else { // friction
+    else {
       this.speed += this.speed > 0 ? -Globals.friction * dt : Globals.friction * dt
       if (Math.abs(this.speed) < 0.01) this.speed = 0
     }
-
-    // move along heading
     const dir = new THREE.Vector3(Math.sin(sprite.rotation.y), 0, Math.cos(sprite.rotation.y))
     sprite.position.addScaledVector(dir, this.speed * dt)
   }

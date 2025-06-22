@@ -3,12 +3,9 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 export class Terrain {
   readonly mesh: THREE.Object3D
-  scene: THREE.Scene
 
-  constructor(scene: THREE.Scene) {
+  constructor() {
     this.mesh = this._loadTerrain()
-    this.scene = scene
-    this.scene.add(this.mesh)
   }
 
   private _loadTerrain(): THREE.Object3D {

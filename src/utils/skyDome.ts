@@ -2,12 +2,9 @@ import * as THREE from 'three'
 
 export class SkyDome {
   mesh: THREE.Mesh
-  scene: THREE.Scene
 
-  constructor(scene: THREE.Scene, radius = 500) {
+  constructor(radius = 500) {
     this.mesh = this._createSkyDome(radius)
-    this.scene = scene
-    scene.add(this.mesh)
   }
 
   update({ x, y, z }: { x: number; y: number; z: number }): this {

@@ -2,12 +2,9 @@ import * as THREE from 'three'
 
 export class Sprite {
   mesh: THREE.Mesh
-  scene: THREE.Scene
 
-  constructor(scene: THREE.Scene, size = 1) {
+  constructor(size = 1) {
     this.mesh = this._createSprite(size)
-    this.scene = scene
-    this.scene.add(this.mesh)
   }
 
   private _createSprite(size: number): THREE.Mesh {

@@ -2,10 +2,8 @@ import * as THREE from 'three'
 
 export class Ground {
   readonly mesh: THREE.Mesh
-  scene: THREE.Scene
 
   constructor(
-    scene: THREE.Scene,
     private size = 1000,
     textureUrl = '/textures/grid.png',
     repeatScalar = 2,
@@ -24,8 +22,7 @@ export class Ground {
     this.mesh = new THREE.Mesh(geo, mat)
     this.mesh.rotation.x = -Math.PI / 2
     this.mesh.receiveShadow = true
-    this.scene = scene
-    this.scene.add(this.mesh)
+
   }
 
   dispose() {
