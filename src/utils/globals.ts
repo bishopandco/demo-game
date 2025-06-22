@@ -10,6 +10,7 @@ export class Globals {
   static lookAhead = 6
   static miniMapSize = 40 // size of the minimap area in world units
   static miniMapHeight = 120 // height of the minimap camera above the scene
+  static gravity = 25
 
   static setMaxSpeed(speed: number) {
     this.maxSpeed = speed

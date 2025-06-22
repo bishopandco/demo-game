@@ -1,16 +1,25 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
+type ReadyCB = (terrain: THREE.Object3D) => void
+
 export class Terrain {
   readonly mesh: THREE.Object3D
+  private readonly _ready: ReadyCB[] = []
 
   constructor() {
-    this.mesh = this._loadTerrain()
+    this.mesh = new THREE.Object3D()   // holder
+    this._loadTerrain()
   }
 
-  private _loadTerrain(): THREE.Object3D {
-    const holder = new THREE.Object3D()
+  /** world.ts uses this to hook the collider once the GLB is here */
+  onReady(cb: ReadyCB) {
+    this._ready.push(cb)
+  }
 
+  /* ─────────────────────────────────────────────────────────────── */
+
+  private _loadTerrain() {
     const url = new URL('@/assets/models/terrain.glb', import.meta.url).href
     new GLTFLoader().load(
       url,
@@ -22,11 +31,11 @@ export class Terrain {
           o.castShadow = true
           o.receiveShadow = true
         })
-        holder.add(terrain)
+        this.mesh.add(terrain)
+        this._ready.forEach((cb) => cb(terrain))
       },
       undefined,
       (err) => console.error('Failed to load terrain', err),
     )
-    return holder
   }
 }

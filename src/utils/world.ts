@@ -13,7 +13,9 @@ import {
   Light,
   HemisphereLight,
   MiniMapCamera,
+  HitBox,
 } from '@/utils'
+import { Octree } from 'three/examples/jsm/math/Octree.js'
 
 export class World {
   scene: THREE.Scene
@@ -31,6 +33,8 @@ export class World {
   hemisphereLight: HemisphereLight
   delta: number
   minimapCamera: MiniMapCamera
+  hitBox: HitBox
+  verticalVelocity: number
 
   constructor(private container: HTMLElement) {
     this.scene = new THREE.Scene()
@@ -58,11 +62,23 @@ export class World {
     this.ground = new Ground()
     this.scene.add(this.ground.mesh)
 
-    this.terrain = new Terrain()
-    this.scene.add(this.terrain.mesh)
+    const octree = new Octree()
+    octree.fromGraphNode(this.ground.mesh)
 
     this.sprite = new Sprite()
+    this.sprite.mesh.position.set(0, 10, 0)
     this.scene.add(this.sprite.mesh)
+
+    this.verticalVelocity = 0
+
+    this.hitBox = new HitBox(this.sprite.mesh)
+
+    this.terrain = new Terrain()
+    this.scene.add(this.terrain.mesh)
+    this.terrain.onReady((mesh) => {
+      this.hitBox.setTerrain(mesh)
+      this.scene.add(mesh)
+    })
 
     this.gameControls = new GameControls()
 
@@ -88,6 +104,10 @@ export class World {
 
   update(dt = this.clock.getDelta()) {
     this.gameControls.update(this.sprite.mesh, dt)
+    this.verticalVelocity -= Globals.gravity * dt
+    this.sprite.mesh.position.y += this.verticalVelocity * dt
+
+    this.hitBox.move(dt)
     const localOffset = new THREE.Vector3(0, Globals.camHeight, Globals.camDistance)
     const worldOffset = localOffset
       .clone()

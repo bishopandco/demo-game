@@ -17,6 +17,8 @@ export class Ground {
       map: tex,
       side: THREE.DoubleSide,
       toneMapped: false,
+      transparent: true,
+      opacity: 0.1,
     })
 
     this.mesh = new THREE.Mesh(geo, mat)
