@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
-import { Ground, SkyDome, Terrain, GameControls, Sprite, Camera } from '@/utils'
+import { Ground, SkyDome, Terrain, GameControls, Sprite, Camera, Globals } from '@/utils'
 
 export class World {
   scene: THREE.Scene
@@ -23,7 +23,7 @@ export class World {
     this.scene = new THREE.Scene()
     this.camera = new Camera(this.scene)
     this.renderer = new THREE.WebGLRenderer({ antialias: true })
-    this.controls = new OrbitControls(this.camera.getCamera(), this.renderer.domElement)
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
     this.composer = new EffectComposer(this.renderer)
     this.clock = new THREE.Clock()
     this.skyDome = new SkyDome(this.scene, 500)
@@ -50,9 +50,24 @@ export class World {
     this.composer.setSize(w, h)
   }
 
-  update(delta = this.clock.getDelta()) {
-    this.delta = delta
+  update(dt = this.clock.getDelta()) {
+    this.gameControls.update(this.sprite.mesh, dt)
+    const localOffset   = new THREE.Vector3(0, Globals.camHeight, Globals.camDistance)
+    const worldOffset   = localOffset.clone()
+      .applyQuaternion(this.sprite.mesh.quaternion)
+      .add(this.sprite.mesh.position)
+    this.camera.position.lerp(worldOffset, Globals.camLerp)
+
+    const forward = new THREE.Vector3(0, 0, -1)
+      .applyQuaternion(this.sprite.mesh.quaternion)
+      .normalize()
+    const lookTarget = this.sprite.mesh.position.clone()
+      .addScaledVector(forward, Globals.lookAhead)
+    this.camera.lookAt(lookTarget)
+
+    this.controls.target.copy(lookTarget)
     this.controls.update()
+
     this.skyDome.update(this.camera.position)
     this.composer.render()
   }

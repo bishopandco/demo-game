@@ -1,14 +1,15 @@
 export class Globals {
-  static maxSpeed = 30
-  static acceleration = 400
-  static brakeDeceleration = 600
+  static maxSpeed = 10
+  static acceleration = 100
+  static brakeDeceleration = 10
   static friction = 50
   static rotationSpeed = Math.PI
-  static camDistance = 2
+  static camDistance = 5
   static camHeight = 4
   static camLerp = 0.1
+  static lookAhead = 6
 
-  //   create methods to access and manipulate these properties
+
   static setMaxSpeed(speed: number) {
     this.maxSpeed = speed
   }
@@ -73,15 +74,25 @@ export class Globals {
     return this.camLerp
   }
 
+  static setLookAhead(lookAhead: number) {
+    this.lookAhead = lookAhead
+  }
+
+  static getLookAhead() {
+    return this.lookAhead
+  }
+
+
   static reset() {
-    this.maxSpeed = 30
-    this.acceleration = 400
+    this.maxSpeed = 10
+    this.acceleration = 10
     this.brakeDeceleration = 600
     this.friction = 50
     this.rotationSpeed = Math.PI
     this.camDistance = 2
     this.camHeight = 4
     this.camLerp = 0.1
+    this.lookAhead = 6
   }
 
   static getAll() {
