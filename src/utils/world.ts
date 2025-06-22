@@ -66,7 +66,7 @@ export class World {
     octree.fromGraphNode(this.ground.mesh)
 
     this.sprite = new Sprite()
-    this.sprite.mesh.position.set(0, 10, 0)
+    this.sprite.mesh.position.set(0, 20, 0)
     this.scene.add(this.sprite.mesh)
 
     this.verticalVelocity = 0
@@ -104,9 +104,6 @@ export class World {
 
   update(dt = this.clock.getDelta()) {
     this.gameControls.update(this.sprite.mesh, dt)
-    this.verticalVelocity -= Globals.gravity * dt
-    this.sprite.mesh.position.y += this.verticalVelocity * dt
-
     this.hitBox.move(dt)
     const localOffset = new THREE.Vector3(0, Globals.camHeight, Globals.camDistance)
     const worldOffset = localOffset
@@ -133,7 +130,7 @@ export class World {
     this.minimapCamera.follow(this.sprite.mesh)
     this.renderer.clearDepth()
 
-    const { innerWidth: w, innerHeight: h } = window
+    const { innerWidth: w } = window
     const size = w * 0.15
 
     this.renderer.setScissorTest(true)

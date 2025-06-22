@@ -8,16 +8,13 @@ export class Terrain {
   private readonly _ready: ReadyCB[] = []
 
   constructor() {
-    this.mesh = new THREE.Object3D()   // holder
+    this.mesh = new THREE.Object3D()
     this._loadTerrain()
   }
 
-  /** world.ts uses this to hook the collider once the GLB is here */
   onReady(cb: ReadyCB) {
     this._ready.push(cb)
   }
-
-  /* ─────────────────────────────────────────────────────────────── */
 
   private _loadTerrain() {
     const url = new URL('@/assets/models/terrain.glb', import.meta.url).href
