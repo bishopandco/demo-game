@@ -12,6 +12,7 @@ import {
   Globals,
   Light,
   HemisphereLight,
+  MiniMapCamera,
 } from '@/utils'
 
 export class World {
@@ -29,6 +30,7 @@ export class World {
   light: Light
   hemisphereLight: HemisphereLight
   delta: number
+  minimapCamera: MiniMapCamera
 
   constructor(private container: HTMLElement) {
     const size = new THREE.Vector2(window.innerWidth, window.innerHeight)
@@ -43,6 +45,8 @@ export class World {
 
     this.camera = new Camera()
     this.scene.add(this.camera)
+
+    this.minimapCamera = new MiniMapCamera(Globals.miniMapSize, Globals.miniMapHeight)
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true })
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
@@ -81,6 +85,7 @@ export class World {
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(w, h)
     this.composer.setSize(w, h)
+    this.minimapCamera.resize()
   }
 
   update(dt = this.clock.getDelta()) {
@@ -103,6 +108,20 @@ export class World {
 
     this.skyDome.update(this.camera.position)
     this.composer.render()
+
+    this.minimapCamera.follow(this.sprite.mesh)
+    this.renderer.clearDepth()
+
+    const { innerWidth: w, innerHeight: h } = window
+    const size = w * 0.25            // 25 % width square in bottom-right
+
+    this.renderer.setScissorTest(true)
+    this.renderer.setViewport(w - size - 10, 10, size, size)
+    this.renderer.setScissor( w - size - 10, 10, size, size)
+    this.renderer.render(this.scene, this.minimapCamera)
+    this.renderer.setScissorTest(false)
+
+
   }
 
   private _setupCamera() {
