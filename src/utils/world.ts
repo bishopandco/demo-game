@@ -33,8 +33,6 @@ export class World {
   minimapCamera: MiniMapCamera
 
   constructor(private container: HTMLElement) {
-    const size = new THREE.Vector2(window.innerWidth, window.innerHeight)
-
     this.scene = new THREE.Scene()
 
     this.light = new Light()
@@ -54,16 +52,16 @@ export class World {
 
     this.clock = new THREE.Clock()
 
-    this.skyDome = new SkyDome(500)
+    this.skyDome = new SkyDome()
     this.scene.add(this.skyDome.mesh)
 
-    this.ground = new Ground(1000, '/textures/grid.png', 2)
+    this.ground = new Ground()
     this.scene.add(this.ground.mesh)
 
     this.terrain = new Terrain()
     this.scene.add(this.terrain.mesh)
 
-    this.sprite = new Sprite(1)
+    this.sprite = new Sprite()
     this.scene.add(this.sprite.mesh)
 
     this.gameControls = new GameControls()
