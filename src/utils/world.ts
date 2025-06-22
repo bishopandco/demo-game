@@ -102,26 +102,27 @@ export class World {
       .normalize()
     const lookTarget = this.sprite.mesh.position.clone().addScaledVector(forward, Globals.lookAhead)
     this.camera.lookAt(lookTarget)
-
     this.controls.target.copy(lookTarget)
     this.controls.update()
 
     this.skyDome.update(this.camera.position)
+    this.renderer.autoClear = false
+    this.renderer.setViewport(0, 0, window.innerWidth, window.innerHeight)
+    this.renderer.setScissorTest(false)
+    this.renderer.clear()
     this.composer.render()
 
     this.minimapCamera.follow(this.sprite.mesh)
     this.renderer.clearDepth()
 
     const { innerWidth: w, innerHeight: h } = window
-    const size = w * 0.25            // 25 % width square in bottom-right
+    const size = w * 0.15
 
     this.renderer.setScissorTest(true)
     this.renderer.setViewport(w - size - 10, 10, size, size)
-    this.renderer.setScissor( w - size - 10, 10, size, size)
+    this.renderer.setScissor(w - size - 10, 10, size, size)
     this.renderer.render(this.scene, this.minimapCamera)
     this.renderer.setScissorTest(false)
-
-
   }
 
   private _setupCamera() {
