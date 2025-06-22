@@ -2,53 +2,93 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
-import { createSkyDome } from '@/utils'
+import { Ground, SkyDome, Terrain, GameControls, Sprite, Camera } from '@/utils'
 
-function setupCamera(camera: THREE.PerspectiveCamera) {
-  camera.position.set(0, 30, 100)
-  camera.lookAt(0, 0, 0)
-  camera.up.set(0, 1, 0)
-}
+export class World {
+  scene: THREE.Scene
+  camera: Camera
+  renderer: THREE.WebGLRenderer
+  composer: EffectComposer
+  controls: OrbitControls
+  skyDome: SkyDome
+  clock: THREE.Clock
+  ground: Ground
+  terrain: Terrain
+  gameControls: GameControls
+  sprite: Sprite
+  delta: number
 
-function setupRenderer(renderer: THREE.WebGLRenderer, window: Window) {
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  renderer.domElement.style.touchAction = 'none'
-  renderer.setPixelRatio(window.devicePixelRatio)
-  renderer.setClearColor(0x000000, 1)
-  renderer.shadowMap.enabled = true
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap
-}
+  constructor(private container: HTMLElement) {
+    const size = new THREE.Vector2(window.innerWidth, window.innerHeight)
+    this.scene = new THREE.Scene()
+    this.camera = new Camera(this.scene)
+    this.renderer = new THREE.WebGLRenderer({ antialias: true })
+    this.controls = new OrbitControls(this.camera.getCamera(), this.renderer.domElement)
+    this.composer = new EffectComposer(this.renderer)
+    this.clock = new THREE.Clock()
+    this.skyDome = new SkyDome(this.scene, 500)
+    this.ground = new Ground(this.scene, 1000, '/textures/grid.png', 2)
+    this.terrain = new Terrain(this.scene)
+    this.gameControls = new GameControls()
+    this.sprite = new Sprite(this.scene, 1)
+    this.delta = 0
 
-function setupControls(controls: OrbitControls) {
-  controls.enableZoom = false
-  controls.enableRotate = false
-  controls.enableDamping = true
-  controls.dampingFactor = 0.05
-  controls.target.set(0, 0, 0)
-  controls.update()
-}
+    this._setupCamera()
+    this._setupRenderer()
+    this._setupControls()
+    this._setupComposer()
 
-function setupComposer(composer: EffectComposer, renderPass: RenderPass, window: Window) {
-  composer.setSize(window.innerWidth, window.innerHeight)
-  composer.addPass(renderPass)
-}
+    this.container.appendChild(this.renderer.domElement)
+    this._loop()
+  }
 
-export function buildWorld() {
-  const size = new THREE.Vector2(window.innerWidth, window.innerHeight)
-  const scene = new THREE.Scene()
-  const aspect = size.x / size.y
-  const camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000)
-  const renderer = new THREE.WebGLRenderer({ antialias: true })
-  const controls = new OrbitControls(camera, renderer.domElement)
-  const composer = new EffectComposer(renderer)
-  const renderPass = new RenderPass(scene, camera)
-  const skyDome = createSkyDome()
-  const clock = new THREE.Clock()
+  resize() {
+    const { innerWidth: w, innerHeight: h } = window
+    this.camera.aspect = w / h
+    this.camera.updateProjectionMatrix()
+    this.renderer.setSize(w, h)
+    this.composer.setSize(w, h)
+  }
 
-  setupCamera(camera)
-  setupRenderer(renderer, window)
-  setupControls(controls)
-  setupComposer(composer, renderPass, window)
+  update(delta = this.clock.getDelta()) {
+    this.delta = delta
+    this.controls.update()
+    this.skyDome.update(this.camera.position)
+    this.composer.render()
+  }
 
-  return { scene, camera, renderer, composer, skyDome, clock }
+  private _setupCamera() {
+    this.camera.position.set(0, 30, 100)
+    this.camera.lookAt(0, 0, 0)
+    this.camera.up.set(0, 1, 0)
+  }
+
+  private _setupRenderer() {
+    const { innerWidth: w, innerHeight: h, devicePixelRatio: dpr } = window
+    this.renderer.setSize(w, h)
+    this.renderer.setPixelRatio(dpr)
+    this.renderer.setClearColor(0x000000, 1)
+    this.renderer.shadowMap.enabled = true
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    this.renderer.domElement.style.touchAction = 'none'
+  }
+
+  private _setupControls() {
+    this.controls.enableZoom = false
+    this.controls.enableRotate = false
+    this.controls.enableDamping = true
+    this.controls.dampingFactor = 0.05
+    this.controls.target.set(0, 0, 0)
+    this.controls.update()
+  }
+
+  private _setupComposer() {
+    const renderPass = new RenderPass(this.scene, this.camera)
+    this.composer.addPass(renderPass)
+  }
+
+  private _loop = () => {
+    requestAnimationFrame(this._loop)
+    this.update()
+  }
 }

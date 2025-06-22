@@ -1,85 +1,20 @@
 <template>
-  <div ref="container" class="w-full h-full"></div>
+  <div id="container" class="w-full h-full"></div>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { gsap } from 'gsap'
-import {
-  Globals,
-  Sprite,
-  Controls,
-  Ground,
-  loadTerrain,
-  buildWorld,
-  cameraLight,
-  hemisphereLight,
-  updateCamera,
-} from '@/utils'
-
-import * as THREE from 'three'
-
-const container = ref<HTMLElement | null>(null)
-
-const { camera, scene, renderer, composer, skyDome, clock } = buildWorld()
-
-let sprite: THREE.Mesh
-let speed = 0
-
-const controls = new Controls()
-
-function init() {
-  container.value?.appendChild(renderer.domElement)
-  const ground = new Ground(1000)
-  scene.add(ground.mesh)
-  scene.add(loadTerrain())
-  scene.add(hemisphereLight(0xffffff, 0x404040, 0.5))
-  scene.add(cameraLight())
-  scene.add(skyDome)
-  sprite = Sprite.createSprite(1)
-  sprite.position.set(0, 1, 0)
-  scene.add(sprite)
-}
-
-function animate() {
-  const delta = clock.getDelta()
-
-  if (controls.forward) speed += 20 * delta
-  if (controls.backward) speed -= 20 * delta
-  if (controls.left) sprite.rotation.y += Globals.rotationSpeed * delta
-  if (controls.right) sprite.rotation.y -= Globals.rotationSpeed * delta
-
-  if (controls.backward) {
-    speed = Math.min(speed + Globals.acceleration * delta, Globals.maxSpeed / 2)
-  } else if (controls.forward) {
-    speed = Math.max(speed - Globals.brakeDeceleration * delta, -Globals.maxSpeed / 2)
-  } else {
-    if (speed > 0) speed = Math.max(speed - Globals.friction * delta, 0)
-    else if (speed < 0) speed = Math.min(speed + Globals.friction * delta, 0)
-  }
-  const forward = new THREE.Vector3(Math.sin(sprite.rotation.y), 0, Math.cos(sprite.rotation.y))
-  sprite.position.add(forward.multiplyScalar(speed * delta))
-  updateCamera(camera, sprite, Globals.camDistance, Globals.camHeight, Globals.camLerp)
-  skyDome.position.copy(camera.position)
-  renderer.render(scene, camera)
-  requestAnimationFrame(animate)
-}
+import { onBeforeUnmount, onMounted } from 'vue'
+import { World } from '@/utils'
 
 onMounted(() => {
-  init()
-  animate()
+  const container = document.getElementById('container')!
+  const world = new World(container)
   window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    composer.setSize(window.innerWidth, window.innerHeight)
+    world.resize()
   })
 })
 onBeforeUnmount(() => {
   window.removeEventListener('resize', () => {})
-  controls.dispose()
-  gsap.globalTimeline.clear()
-  container.value?.removeChild(renderer.domElement)
 })
 </script>
 

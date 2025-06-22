@@ -1,4 +1,4 @@
-export class Controls {
+export class GameControls {
   public forward = false
   public backward = false
   public left = false

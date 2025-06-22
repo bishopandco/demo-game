@@ -1,14 +1,25 @@
 import * as THREE from 'three'
 
-export function updateCamera(
-  camera: THREE.PerspectiveCamera,
-  sprite: THREE.Mesh,
-  camHeight: number,
-  camDistance: number,
-  camLerp: number,
-) {
-  const localOffset = new THREE.Vector3(0, camHeight, camDistance + 5)
-  const worldOffset = localOffset.clone().applyQuaternion(sprite.quaternion).add(sprite.position)
-  camera.position.lerp(worldOffset, camLerp)
-  camera.quaternion.slerp(sprite.quaternion, camLerp)
+export class Camera {
+  camera: THREE.PerspectiveCamera
+  scene: THREE.Scene
+
+  constructor(scene: THREE.Scene) {
+    this.camera = new THREE.PerspectiveCamera()
+    this.scene = scene
+    this.camera.position.set(0, 10, 10)
+    this.camera.lookAt(0, 0, 0)
+    this.camera.aspect = window.innerWidth / window.innerHeight
+    this.camera.updateProjectionMatrix()
+    this.scene.add(this.camera)
+  }
+
+  update({ x, y, z }: { x: number; y: number; z: number }): this {
+    this.camera.position.set(x, y, z)
+    this.camera.lookAt(0, 0, 0)
+    return this
+  }
+  getCamera(): THREE.PerspectiveCamera {
+    return this.camera
+  }
 }
