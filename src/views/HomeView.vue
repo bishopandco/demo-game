@@ -4,13 +4,12 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-
 import { gsap } from 'gsap'
 import {
   Globals,
   Sprite,
   Controls,
-  buildGridPlane,
+  Ground,
   loadTerrain,
   buildWorld,
   cameraLight,
@@ -22,8 +21,7 @@ import * as THREE from 'three'
 
 const container = ref<HTMLElement | null>(null)
 
-const clock = new THREE.Clock()
-const { camera, scene, renderer, composer, skyDome } = buildWorld()
+const { camera, scene, renderer, composer, skyDome, clock } = buildWorld()
 
 let sprite: THREE.Mesh
 let speed = 0
@@ -32,7 +30,8 @@ const controls = new Controls()
 
 function init() {
   container.value?.appendChild(renderer.domElement)
-  scene.add(buildGridPlane())
+  const ground = new Ground(1000)
+  scene.add(ground.mesh)
   scene.add(loadTerrain())
   scene.add(hemisphereLight(0xffffff, 0x404040, 0.5))
   scene.add(cameraLight())

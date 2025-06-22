@@ -43,11 +43,12 @@ export function buildWorld() {
   const composer = new EffectComposer(renderer)
   const renderPass = new RenderPass(scene, camera)
   const skyDome = createSkyDome()
+  const clock = new THREE.Clock()
 
   setupCamera(camera)
   setupRenderer(renderer, window)
   setupControls(controls)
   setupComposer(composer, renderPass, window)
 
-  return { scene, camera, renderer, composer, skyDome }
+  return { scene, camera, renderer, composer, skyDome, clock }
 }
